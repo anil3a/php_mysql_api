@@ -36,7 +36,7 @@ Before using this template, make sure you have the following prerequisites insta
 1. Clone this repository to your local machine:
 
    ```bash
-   git clone https://github.com/yourusername/php-project-template.git
+   git clone https://github.com/anil3a/php_mysql_api.git
    ```
 
 2. Configure your database credentials in the `DatabaseConfig.php` file.
@@ -108,4 +108,3 @@ Contributions are welcome! If you have any improvements or feature suggestions, 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-You can customize this `README.md` to match the specifics of your project and provide more detailed instructions as needed.
