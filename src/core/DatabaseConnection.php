@@ -11,7 +11,6 @@ class DatabaseConnection
     private $select = '*';
     private $from = '';
     private $join = '';
-    private $joinType = '';
     private $where = '';
     private $orderBy = '';
     private $groupBy = '';
@@ -177,26 +176,13 @@ class DatabaseConnection
      *
      * @author Anil Prajapati <anilprz3@gmail.com>
      **/
-    public function join($table, $onCondition)
+    public function join($table, $onCondition, $joinType = '')
     {
-        $this->joinType = ''; // Reset to default (INNER JOIN)
-        $this->join = "JOIN $table ON $onCondition";
-        return $this;
-    }
-
-    /**
-     * Method to set LEFT JOIN query
-     * 
-     * @param string $table
-     * @param string $onCondition
-     * @return DatabaseConnection
-     *
-     * @author Anil Prajapati <anilprz3@gmail.com>
-     **/
-    public function leftJoin($table, $onCondition)
-    {
-        $this->joinType = 'LEFT'; // Set to LEFT JOIN
-        $this->join = "LEFT JOIN $table ON $onCondition";
+        if (empty($this->join)) {
+            $this->join = "$joinType JOIN $table ON $onCondition";
+        } else {
+            $this->join .= " $joinType JOIN $table ON $onCondition";
+        }
         return $this;
     }
 
@@ -210,7 +196,47 @@ class DatabaseConnection
      */
     public function where($condition)
     {
-        $this->where = "WHERE $condition";
+        if (empty($this->where)) {
+            $this->where = "WHERE $condition";
+        } else {
+            $this->where .= " AND $condition";
+        }
+        return $this;
+    }
+
+    /**
+     * Metho to implement the escapeAndQuote method to properly escape and quote values
+     *
+     * @author Anil Prajapati <anilprz3@gmail.com>
+     **/
+    private function escapeAndQuote($value)
+    {
+        return "'" . $this->conn->real_escape_string($value) . "'";
+    }
+
+    /**
+     * Method to set WHERE IN query
+     * 
+     * @param string $field
+     * @param array $values
+     * @return DatabaseConnection
+     *
+     * @author Anil Prajapati <anilprz3@gmail.com>
+     **/
+    public function where_in($field, array $values)
+    {
+        $escapedValues = array_map(function ($value) {
+            return $this->escapeAndQuote($value);
+        }, $values);
+
+        $inClause = implode(', ', $escapedValues);
+
+        if (empty($this->where)) {
+            $this->where = "WHERE $field IN ($inClause)";
+        } else {
+            $this->where .= " AND $field IN ($inClause)";
+        }
+
         return $this;
     }
 
@@ -273,6 +299,8 @@ class DatabaseConnection
     {
         // $joinClause = $this->joinType === 'LEFT' ? 'LEFT JOIN' : 'JOIN';
         $sql = "SELECT {$this->select} FROM {$this->from} {$this->join} {$this->where} {$this->groupBy} {$this->orderBy} {$this->limit}";
+
+        $this->logAccess("Executing query: $sql");
 
         $result = $this->conn->query($sql);
         if (!$result) { return []; }
