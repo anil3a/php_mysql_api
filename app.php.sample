@@ -1,11 +1,11 @@
 <?php
-require_once('config.php');
+defined('APP_PATH') or exit('No direct script access allowed');
 
 require_once( APP_PATH .'/src/core/Log.php');
 require_once( APP_PATH .'/apps/Sync_Customers.php');
 
 
-class Init {
+class App {
 
     public function __construct()
     {
@@ -14,5 +14,3 @@ class Init {
     }
 
 }
-
-new Init();

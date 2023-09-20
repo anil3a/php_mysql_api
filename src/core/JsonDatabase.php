@@ -4,10 +4,11 @@ defined('APP_PATH') or exit('No direct script access allowed');
 class JsonDatabase
 {
     private $filePath;
-    private $defaultDirectory = 'data'; // Default directory
+    private $defaultDirectory = APP_PATH . 'data'; // Default directory
     private $defaultFileName = 'data.json'; // Default filename
+    private $lockHandle;
 
-    public function __construct($directory = null, $fileName = null)
+    public function __construct($fileName = null, $directory = null)
     {
         $directory = $directory ?? $this->defaultDirectory;
         $fileName = $fileName ?? $this->defaultFileName;
@@ -85,15 +86,18 @@ class JsonDatabase
     private function acquireLock()
     {
         $lockFile = $this->filePath . '.lock';
-        $lockHandle = fopen($lockFile, 'w');
-        flock($lockHandle, LOCK_EX);
+        $this->lockHandle = fopen($lockFile, 'w');
+        flock($this->lockHandle, LOCK_EX);
     }
 
     private function releaseLock()
     {
         $lockFile = $this->filePath . '.lock';
-        flock($lockHandle, LOCK_UN);
-        fclose($lockHandle);
+        if($this->lockHandle) {
+            flock($this->lockHandle, LOCK_UN);
+            fclose($this->lockHandle);
+        }
+
         unlink($lockFile);
     }
 }

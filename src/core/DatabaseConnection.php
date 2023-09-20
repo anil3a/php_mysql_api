@@ -241,6 +241,32 @@ class DatabaseConnection
     }
 
     /**
+     * Method to set WHERE NOT IN query
+     * 
+     * @param string $field
+     * @param array $values
+     * @return DatabaseConnection
+     *
+     * @author Anil Prajapati <anilprz3@gmail.com>
+     **/
+    public function where_not_in($field, array $values)
+    {
+        $escapedValues = array_map(function ($value) {
+            return $this->escapeAndQuote($value);
+        }, $values);
+
+        $inClause = implode(', ', $escapedValues);
+
+        if (empty($this->where)) {
+            $this->where = "WHERE $field NOT IN ($inClause)";
+        } else {
+            $this->where .= " AND $field NOT IN ($inClause)";
+        }
+
+        return $this;
+    }
+
+    /**
      * Method to set ORDER BY query
      * 
      * @param string $column

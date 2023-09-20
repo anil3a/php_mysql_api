@@ -38,10 +38,14 @@ class Sync_CustomersTest {
         // Use the default directory and filename
         $database = new JsonDatabase();
 
+        // OR, specify a custom filename
+        // $customFileName = 'custom.json';
+        // $database = new JsonDatabase($customFileName);
+
         // OR, specify a custom directory and filename
         // $customDirectory = 'custom_data';
         // $customFileName = 'custom.json';
-        // $database = new JsonDatabase($customDirectory, $customFileName);
+        // $database = new JsonDatabase($customFileName, $customDirectory);
 
 
         // Reading Data
