@@ -1,1 +1,4 @@
-src/DatabaseConfig.php
+DatabaseConfig.php
+app.php
+logs/*
+apps/*
