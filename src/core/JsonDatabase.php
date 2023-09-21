@@ -4,7 +4,7 @@ defined('APP_PATH') or exit('No direct script access allowed');
 class JsonDatabase
 {
     private $filePath;
-    private $defaultDirectory = APP_PATH . 'data'; // Default directory
+    private $defaultDirectory = APP_PATH . '/data'; // Default directory
     private $defaultFileName = 'data.json'; // Default filename
     private $lockHandle;
 
@@ -17,87 +17,80 @@ class JsonDatabase
 
     public function read()
     {
+        // Check if the directory exists
+        if (!is_dir(dirname($this->filePath))) {
+            return [];
+        }
+
+        // Acquire a lock manually before reading
         $this->acquireLock();
 
+        // Check if the file exists
         if (!file_exists($this->filePath)) {
             $this->releaseLock();
             return [];
         }
 
         $jsonContent = file_get_contents($this->filePath);
+
         $this->releaseLock();
 
         return json_decode($jsonContent, true);
     }
 
-    public function write($data)
+    public function insert($data)
     {
+        // Check if the directory exists; if not, create it
+        $directory = dirname($this->filePath);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        // Acquire a lock manually before writing
         $this->acquireLock();
+
+        // Create the lock file if it doesn't exist
+        $this->ensureLockFileExists();
 
         $jsonData = json_encode($data, JSON_PRETTY_PRINT);
         file_put_contents($this->filePath, $jsonData);
 
         $this->releaseLock();
+
+        return true;
     }
 
-    public function insert($record)
+    // Manual lock acquisition
+    public function acquireLock()
     {
-        $this->acquireLock();
+        if (!$this->lockHandle) {
+            $lockFile = $this->filePath . '.lock';
 
-        $data = $this->read();
-        $data[] = $record;
-        $this->write($data);
+            // Create the lock file if it doesn't exist
+            $this->ensureLockFileExists();
 
-        $this->releaseLock();
-    }
-
-    public function update($index, $record)
-    {
-        $this->acquireLock();
-
-        $data = $this->read();
-        if (isset($data[$index])) {
-            $data[$index] = $record;
-            $this->write($data);
-            $this->releaseLock();
-            return true;
+            $this->lockHandle = fopen($lockFile, 'w');
+            flock($this->lockHandle, LOCK_EX);
         }
-
-        $this->releaseLock();
-        return false;
     }
 
-    public function delete($index)
+    // Manual lock release
+    public function releaseLock()
     {
-        $this->acquireLock();
-
-        $data = $this->read();
-        if (isset($data[$index])) {
-            unset($data[$index]);
-            $this->write(array_values($data)); // Reindex the array
-            $this->releaseLock();
-            return true;
-        }
-
-        $this->releaseLock();
-        return false;
-    }
-
-    private function acquireLock()
-    {
-        $lockFile = $this->filePath . '.lock';
-        $this->lockHandle = fopen($lockFile, 'w');
-        flock($this->lockHandle, LOCK_EX);
-    }
-
-    private function releaseLock()
-    {
-        $lockFile = $this->filePath . '.lock';
-        if($this->lockHandle) {
+        if ($this->lockHandle) {
             flock($this->lockHandle, LOCK_UN);
             fclose($this->lockHandle);
+            $this->lockHandle = null;
         }
+    }
 
-        unlink($lockFile);
+    // Ensure the lock file exists
+    private function ensureLockFileExists()
+    {
+        $lockFile = $this->filePath . '.lock';
+
+        if (!file_exists($lockFile)) {
+            touch($lockFile);
+        }
     }
 }

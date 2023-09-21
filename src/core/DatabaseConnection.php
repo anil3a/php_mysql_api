@@ -205,7 +205,7 @@ class DatabaseConnection
     }
 
     /**
-     * Metho to implement the escapeAndQuote method to properly escape and quote values
+     * Method to implement the escapeAndQuote method to properly escape and quote values
      *
      * @author Anil Prajapati <anilprz3@gmail.com>
      **/
