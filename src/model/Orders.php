@@ -81,4 +81,20 @@ class Orders
             ->where('order_id', $order_id)
             ->get();
     }
+
+    public function get_today_order_ids($limit=100)
+    {
+        $sydneyTimeZone = new DateTimeZone('Australia/Sydney');
+        $sydneyTime = new DateTime('now', $sydneyTimeZone);
+        $todayDate = $sydneyTime->format('Y-m-d');
+
+        $filter_status = ['paid', 'unpaid', 'partial'];
+        Log::logAccess("Fetching today orders for date: " . $todayDate);
+
+        return $this->db->from('orders')->select('id')
+        ->where('delivery_date', $todayDate)
+        ->where_in('status', $filter_status)
+        ->limit($limit)
+        ->getAll();
+    }
 }
