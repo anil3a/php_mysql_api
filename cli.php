@@ -10,10 +10,14 @@ if ($argc >= 2) {
 
     if (method_exists($app, $method)) {
         if (method_exists($app, $method) && $argc >= 3) {
-            // Call the method with two parameters if they are provided
-            $param1 = $argv[2];
-            $param2 = $argv[3];
-            $result = call_user_func([$app, $method], $param1, $param2);
+            // supports only two parameters
+            if(!empty($argv[3])){
+                $result = call_user_func([$app, $method], $argv[2], $argv[3]);
+            }elseif(!empty($argv[2])){
+                $result = call_user_func([$app, $method], $argv[2]);
+            }else{
+                $result = call_user_func([$app, $method]);
+            }
         } else {
             // Call the method with no parameters
             $result = call_user_func([$app, $method]);

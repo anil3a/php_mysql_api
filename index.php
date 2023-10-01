@@ -2,4 +2,5 @@
 require_once('config.php');
 require_once('app.php');
 
-new App();
+$new_app = new App();
+$new_app->run();

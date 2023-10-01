@@ -9,6 +9,11 @@ class App {
 
     public function __construct()
     {
+        // silence is golden
+    }
+
+    public function run()
+    {
         $db_customers = new Sync_CustomersTest();
         $db_customers->get_my_customer();
     }
